@@ -1,5 +1,6 @@
 ﻿using SmartApp.DotNetCore.Services.Requests;
 using SmartApp.DotNetCore.Services.Responses;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SmartApp.DotNetCore.Services.Interfaces

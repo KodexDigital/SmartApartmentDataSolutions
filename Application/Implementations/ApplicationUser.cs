@@ -1,7 +1,7 @@
 ﻿using Application.Common.Models.UserModels;
 using Application.Common.Responses;
 using Application.Interfaces;
-using Microsoft.AspNetCore.Identity;
+using Domain.Entities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -11,30 +11,29 @@ namespace Application.Implementations
     public class ApplicationUser : IApplicationUser
     {
         private readonly ILogger<ApplicationUser> logger;
-        private readonly UserManager<IdentityUser> userManager;
-        private readonly SignInManager<IdentityUser> signInManager;
+        private readonly IAccountUserDAO userDAO;
         private readonly ITokenization tokenization;
-        public ApplicationUser(ILogger<ApplicationUser> logger, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
+        public ApplicationUser(ILogger<ApplicationUser> logger, IAccountUserDAO userDAO,
             ITokenization tokenization)
         {
             this.logger = logger;
-            this.userManager = userManager;
-            this.signInManager = signInManager;
+            this.userDAO = userDAO;
             this.tokenization = tokenization;
         }
+
         public async Task<ResponseModel<ApplicationUserResponse>> UserLogin(LoginUserModel model)
         {
             var response = new ResponseModel<ApplicationUserResponse>();
             try
             {
-                var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
-                if (result.Succeeded)
+                var result = await userDAO.IsUserExist(model.Email, model.Password);
+                if (result != null)
                 {
-                    var user = await userManager.FindByEmailAsync(model.Email);
-                    response.Status = result.Succeeded;
-                    response.Data = UserAuthResponse(model, response, user);
+                    response.Status = true;
+                    response.Message = "Login successfull";
+                    response.Data = UserAuthResponse(model, response, new AppUser { Email = model.Email });
 
-                    logger.LogInformation($"Login was successful with the following ==>{user} | {result} | {response}");
+                    logger.LogInformation($"Login was successful for user ==>{model.Email} | {result} | {response}");
                 }
                 else
                 {
@@ -58,18 +57,21 @@ namespace Application.Implementations
             var response = new ResponseModel<ApplicationUserResponse>();
             try
             {
-                var user = new IdentityUser
+                var user = new AppUser
                 {
                     UserName = model.Email,
                     Email = model.Email,
                     PhoneNumber = model.PhoneNumber,
                     PasswordHash = model.Password
                 };
-                var result = await userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
+
+                var result = await userDAO.CreateAccount(user);
+
+                //var result = await userManager.CreateAsync(user, model.Password);
+                if (result)
                 {
-                    await signInManager.SignInAsync(user, isPersistent: false);
-                    response.Status = result.Succeeded;
+                    //await signInManager.SignInAsync(user, isPersistent: false);
+                    response.Status = true;
                     response.Data = UserAuthResponse(model, response, user);
 
                     logger.LogInformation($"Registration was successful with the following ==>{user} | {result} | {response}");
@@ -91,7 +93,7 @@ namespace Application.Implementations
             return response;
         }
 
-        private ApplicationUserResponse UserAuthResponse(dynamic model, ResponseModel<ApplicationUserResponse> response, IdentityUser user)
+        private ApplicationUserResponse UserAuthResponse(dynamic model, ResponseModel<ApplicationUserResponse> response, AppUser user)
         {
             response.Data = new ApplicationUserResponse
             {

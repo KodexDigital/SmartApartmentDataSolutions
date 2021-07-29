@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Services.Auth;
 using System;
+using System.Data;
 using System.Text;
 
 [assembly:ApiController]
@@ -32,20 +34,25 @@ namespace Presentation
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddDbContext<AppDbContext>(o => o.UseSqlite(Configuration.GetConnectionString("InMemmory-Connection")));
+            //services.AddDbContext<AppDbContext>(o => o.UseSqlite(Configuration.GetConnectionString("InMemmory-Connection")));
+            //services.AddDbContext<SmartAppDBContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<IdentityUser, IdentityRole>(opt => 
-            {
-                opt.Password.RequireUppercase = false;
-                opt.Password.RequireNonAlphanumeric = false;
-                opt.Password.RequiredLength = 6;
-                opt.Password.RequiredUniqueChars = 0;
-                opt.Password.RequireDigit = false;
-                opt.Password.RequireNonAlphanumeric = false;
-                opt.Password.RequireLowercase = false;
-                opt.User.RequireUniqueEmail = true;
-                opt.SignIn.RequireConfirmedEmail = false;
-            }).AddEntityFrameworkStores<AppDbContext>();
+            services.AddDbContext<SmartAppDBContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<IDbConnection>((s) => new SqlConnection(Configuration.GetConnectionString("DefaultConnection")));
+
+            //services.AddIdentity<AspNetUser, IdentityRole>(opt =>
+            //{
+            //    opt.Password.RequireUppercase = false;
+            //    opt.Password.RequireNonAlphanumeric = false;
+            //    opt.Password.RequiredLength = 6;
+            //    opt.Password.RequiredUniqueChars = 0;
+            //    opt.Password.RequireDigit = false;
+            //    opt.Password.RequireNonAlphanumeric = false;
+            //    opt.Password.RequireLowercase = false;
+            //    opt.User.RequireUniqueEmail = true;
+            //    opt.SignIn.RequireConfirmedEmail = false;
+            //}).AddEntityFrameworkStores<SmartAppDBContext>()
+            //.AddDefaultTokenProviders();
 
             services.AddSwaggerGen(c =>
             {

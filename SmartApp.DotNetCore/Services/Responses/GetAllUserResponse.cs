@@ -1,14 +1,16 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace SmartApp.DotNetCore.Services.Responses
 {
     public class GetAllUserResponse : BaseResponse
     {
         [JsonPropertyName("data")]
-        public UserData UserData { get; set; }
+        public List<UserData> Data { get; set; }
     }
 
-    public class UserData : BaseResponse
+    public class UserData
     {
         [JsonPropertyName("phoneNumber")]
         public string PhoneNumber { get; set; }

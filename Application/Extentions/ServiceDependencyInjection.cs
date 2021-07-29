@@ -10,6 +10,7 @@ namespace Application.Extensions
         {
             services.AddTransient<IApplicationUser, ApplicationUser>();
             services.AddTransient<ITokenization, Tokenization>();
+            services.AddTransient<IAccountUserDAO, AccountUserDAO>();
             //services.AddHttpContextAccessor();
             return services;
         }

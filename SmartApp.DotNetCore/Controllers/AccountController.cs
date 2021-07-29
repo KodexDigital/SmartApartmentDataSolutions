@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SmartApp.DotNetCore.Services.Interfaces;
 using SmartApp.DotNetCore.Services.Requests;
+using SmartApp.DotNetCore.Services.Responses;
 using SmartApp.DotNetCore.ViewModels;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SmartApp.DotNetCore.Controllerss
@@ -28,13 +31,14 @@ namespace SmartApp.DotNetCore.Controllerss
                 Email = request.Email,
                 Password = request.Password,
                 PhoneNumber = request.PhoneNumber,
+                ConfirmPassword = request.ConfirmPassword
             });
             if (result.Status.Equals(true))
             {
                 //TempData["User-Email"] = result.Data.Email;
                 //TempData["User-Token"] = result.Data.Token;
                 ModelState.Clear();
-                ViewBag.Message = result.Message;
+                //ViewBag.Message = result.Message;
                 return RedirectToAction(nameof(Login), this);
             }                
             else
@@ -61,7 +65,6 @@ namespace SmartApp.DotNetCore.Controllerss
             {
                 //TempData["email"] = model.Email;
                 ModelState.Clear();
-                ViewBag.Message = result.Message;
                 return RedirectToAction(nameof(AllUsers), this);
             }
             else
@@ -72,8 +75,9 @@ namespace SmartApp.DotNetCore.Controllerss
         public async Task<IActionResult> AllUsers()
         {
             var result = await smartService.GetAllUsers();
-            if (result.Status.Equals(true))
-                return View();
+
+            if (result != null)
+                return View(result);
             else
                 ViewBag.Message = result.Message;
 

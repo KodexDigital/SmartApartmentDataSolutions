@@ -1,19 +1,19 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace SmartApp.DotNetCore.Services.Requests
 {
     public class RegisterUserRequest
     {
-        [JsonPropertyName("email")]
+        [JsonProperty("email")]
         public string Email { get; set; }
 
-        [JsonPropertyName("password")]
+        [JsonProperty("password")]
         public string Password { get; set; }
 
-        [JsonPropertyName("phoneNumber")]
+        [JsonProperty("phoneNumber")]
         public string PhoneNumber { get; set; }
 
-        [JsonPropertyName("confirmPassword")]
+        [JsonProperty("confirmPassword")]
         public string ConfirmPassword { get; set; }
     }
 }

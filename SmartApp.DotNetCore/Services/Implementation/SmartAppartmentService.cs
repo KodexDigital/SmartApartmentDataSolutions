@@ -122,15 +122,17 @@ namespace SmartApp.DotNetCore.Services.Implementation
                 {
                     var responseResult = await result.Content.ReadAsStringAsync();
                     var jsonRespose = JsonConvert.DeserializeObject<GetAllUserResponse>(responseResult);
-
                     if (jsonRespose.Status.Equals(true))
                     {
                         response.Status = jsonRespose.Status;
-                        response.UserData = jsonRespose.UserData;
+                        response.Data = jsonRespose.Data;
                         response.Message = jsonRespose.Message;
                     }
-                    response.Status = jsonRespose.Status;
-                    response.Message = jsonRespose.Message;
+                    else
+                    {
+                        response.Status = jsonRespose.Status;
+                        response.Message = jsonRespose.Message;
+                    }
                 }
                 else
                 {

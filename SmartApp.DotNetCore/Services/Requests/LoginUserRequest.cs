@@ -1,14 +1,13 @@
-﻿using SmartApp.DotNetCore.Services.Responses;
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace SmartApp.DotNetCore.Services.Requests
 {
     public class LoginUserRequest
     {
-        [JsonPropertyName("email")]
+        [JsonProperty("email")]
         public string Email { get; set; }
 
-        [JsonPropertyName("password")]
+        [JsonProperty("password")]
         public string Password { get; set; }
     }
 }

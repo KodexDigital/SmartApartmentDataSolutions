@@ -12,7 +12,7 @@ namespace Presentation.Controllers
     [Route("api/users")]
     public class UserController : BaseEntryController
     {
-        
+
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ResponseModel<UserListsResponseModel>), (int)HttpStatusCode.OK)]
         [HttpGet("all-users")]
