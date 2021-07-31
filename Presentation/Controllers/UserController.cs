@@ -1,6 +1,7 @@
 ﻿using Application.Common.Models.Responses;
 using Application.Common.Responses;
 using Application.Handlers.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Mime;
@@ -10,16 +11,18 @@ namespace Presentation.Controllers
 {
     [Produces(MediaTypeNames.Application.Json)]
     [Route("api/users")]
+    [Authorize]
     public class UserController : BaseEntryController
     {
 
+        /// <summary>
+        /// The endpoint to view all registered users
+        /// </summary>
+        /// <returns>List of all users.</returns>
         [ProducesResponseType(typeof(ResponseModel), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ResponseModel<UserListsResponseModel>), (int)HttpStatusCode.OK)]
         [HttpGet("all-users")]
-        public async Task<IActionResult> GetAllUsers() //[FromHeader] string access_token
-            => Ok(await Mediator.Send(new GetAllUsersQuery { }));
-
+        public async Task<IActionResult> GetAllUsers()
+            => Ok(await Mediator.Send(new GetAllUsersQuery { })); 
     }
 }
-
-//var command = new GetAllUsersQuery { }; // Access_Key = access_token

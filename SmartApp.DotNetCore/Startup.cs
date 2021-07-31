@@ -34,6 +34,7 @@ namespace SmartApp.DotNetCore
                 cfg.BaseAddress = new Uri(smartAppService.BaseUrl);
                 cfg.Timeout = TimeSpan.FromMinutes(double.Parse(smartAppService.ClientTimeOut));
             });
+            services.AddHttpContextAccessor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

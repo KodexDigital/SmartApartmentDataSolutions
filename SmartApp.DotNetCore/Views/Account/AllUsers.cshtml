@@ -9,35 +9,45 @@
     <div class="container h-100 card col-md-8">
         <div class="row justify-content-center align-items-center">
             <h2 class="p-4">All registered users</h2>
-            <table class="table table-hover table-dark p-1">
-                <thead class="bg-light text-primary">
-                    <tr>
-                        <th>
-                            #
-                        </th>
-                        <th>
-                            Username
-                        </th>
-                        <th>
-                            Phone number
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.Data)
-                    {
+            @if (Model.Data == null)
+            {
+                <div class="card  border-danger">
+                    <h6 class="card-body h5">Please Login to view this information</h6>
+                </div>
+            }
+            else
+            {
+                <table class="table table-hover border p-1">
+                    <thead class="thead-dark">
                         <tr>
-                            <td> @( ((Int32) 1) + Model.Data.IndexOf(item) ) </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Username)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.PhoneNumber)
-                            </td>
+                            <th>
+                                Id
+                            </th>
+                            <th>
+                                Username
+                            </th>
+                            <th>
+                                Phone number
+                            </th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Data)
+                        {
+                            <tr>
+                                <td> @( ((Int32) 1) + Model.Data.IndexOf(item) ) </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Username)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.PhoneNumber)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
         </div>
     </div>
 </div>

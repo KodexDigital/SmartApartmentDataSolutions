@@ -5,6 +5,7 @@ using Services.Auth;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace Application.Implementations
@@ -16,23 +17,22 @@ namespace Application.Implementations
         {
             jWTOption = jwtOptions.Value;
         }
-        public string GetAccessToken(string Email)
-        {
-            var payload = new Dictionary<string, object>
-            {
-               ["sub"] = Email,
-               ["email"] = Email
-            };
-            return GetToken(payload);
-        }
+        public string GetAccessToken(string userEmail) => GetToken(userEmail);
 
-        public string GetToken(Dictionary<string, object> payload)
+        public string GetToken(string email)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jWTOption.SecretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(jWTOption.Issuer, jWTOption.Issuer,
-              expires: DateTime.Now.AddMinutes(double.Parse(jWTOption.ExpirationTime)),
+            var claims = new List<Claim>()
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
+
+            var token = new JwtSecurityToken(jWTOption.Issuer, jWTOption.Issuer,claims,
+              expires: DateTime.Now.AddHours(double.Parse(jWTOption.ExpirationTime)),
               signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

@@ -1,6 +1,6 @@
-﻿using SmartApp.DotNetCore.Services.Requests;
+﻿using Application.Common.Responses;
+using SmartApp.DotNetCore.Services.Requests;
 using SmartApp.DotNetCore.Services.Responses;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SmartApp.DotNetCore.Services.Interfaces
@@ -9,6 +9,7 @@ namespace SmartApp.DotNetCore.Services.Interfaces
     {
         Task<RegisterUserResponse> RegisterUser(RegisterUserRequest request);
         Task<LoginUserResponse> LoginUser(LoginUserRequest request);
+        Task<ResponseModel> LoginOutUser();
         Task<GetAllUserResponse> GetAllUsers();
     }
 }

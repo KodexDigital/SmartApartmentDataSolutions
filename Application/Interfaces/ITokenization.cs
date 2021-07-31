@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-
-namespace Application.Interfaces
+﻿namespace Application.Interfaces
 {
     public interface ITokenization
     {
-        string GetAccessToken(string Email);
-        string GetToken(Dictionary<string, object> payload);
+        string GetAccessToken(string userEmail);
+        string GetToken(string email);
     }
 }

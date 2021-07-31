@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Presentation</name>
+    </assembly>
+    <members>
+        <member name="M:Presentation.Controllers.AccountController.Register(Application.Handlers.Commands.UserRegistrationCommand)">
+            <summary>
+            User account creation endpoint
+            </summary>
+            <param name="command">The request payload.</param>
+            <returns>Success if all payload is valid.</returns>
+        </member>
+        <member name="M:Presentation.Controllers.AccountController.SignIn(Application.Handlers.Commands.UserLoginCommand)">
+            <summary>
+            User access gateway
+            </summary>
+            <param name="command">Request payloads.</param>
+            <returns>Access resources.</returns>
+        </member>
+        <member name="M:Presentation.Controllers.AccountController.LogOut">
+            <summary>
+            Access release endpoint
+            </summary>
+            <returns>Logout of the system.</returns>
+        </member>
+        <member name="M:Presentation.Controllers.UserController.GetAllUsers">
+            <summary>
+            The endpoint to view all registered users
+            </summary>
+            <returns>List of all users.</returns>
+        </member>
+    </members>
+</doc>

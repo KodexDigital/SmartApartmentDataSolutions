@@ -2,8 +2,10 @@
 using Application.Common.Models.UserModels;
 using Application.Common.Responses;
 using Application.Interfaces;
+using Domain.Entities;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
@@ -48,7 +50,7 @@ namespace Application.Handlers.Commands
                 {
                     if (!request.Password.Equals(request.ConfirmPassword))
                         throw new CustomException("Password mis-matched");
-
+   
                     var result = await appUser.UserRegistration(new ApplicationUserModel
                     {
                         PhoneNumber = request.PhoneNumber,

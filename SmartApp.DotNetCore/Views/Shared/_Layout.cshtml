@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -20,14 +21,30 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="UserRegistration">Register</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="AllUsers">View all users</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                            @ViewBag.User
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="AllUsers">All Users</a>
-                        </li>
+                        @{ 
+                            if (HttpContextAccessor.HttpContext.Request.Cookies["jwtCookie"] == null)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="UserRegistration">Register</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                                </li> 
+                            }
+                            else
+                            {
+                                <li class="nav-item ml-auto">
+                                    <form method="post" asp-area="" asp-controller="Account" asp-action="Logout">
+                                        <button class="nav-link bg-primary text-white small border-0 rounded rounded-bottom">Logout</button>
+                                    </form>
+                                </li> 
+                             }
+                          }
                     </ul>
                 </div>
             </div>

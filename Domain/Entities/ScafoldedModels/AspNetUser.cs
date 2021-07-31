@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -20,10 +19,12 @@ namespace Domain.Entities.ScafoldedModels
         public string Id { get; set; }
 
         [Required]
+        [EmailAddress(ErrorMessage ="invalid email format")]
         public string Email { get; set; }
         public bool EmailConfirmed { get; set; }
 
         [Required]
+        [StringLength(8, ErrorMessage = "Password length cannot be less than 8 characters")]
         public string PasswordHash { get; set; }
         public string SecurityStamp { get; set; }
 

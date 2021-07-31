@@ -5,6 +5,10 @@ using Domain.Entities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using Secure.Hash.Algorithm.SDK.Controllers;
+using Microsoft.AspNetCore.Http;
+using Services.Auth;
+using Microsoft.Extensions.Options;
 
 namespace Application.Implementations
 {
@@ -13,12 +17,20 @@ namespace Application.Implementations
         private readonly ILogger<ApplicationUser> logger;
         private readonly IAccountUserDAO userDAO;
         private readonly ITokenization tokenization;
+        private readonly IHttpContextAccessor httpContext;
+        private readonly SecureData secureData;
+        private readonly JWTSettings _jtwOpt;
+
         public ApplicationUser(ILogger<ApplicationUser> logger, IAccountUserDAO userDAO,
-            ITokenization tokenization)
+            ITokenization tokenization, IHttpContextAccessor httpContext, SecureData secureData,
+            IOptions<JWTSettings> jtwOpt)
         {
             this.logger = logger;
             this.userDAO = userDAO;
             this.tokenization = tokenization;
+            this.httpContext = httpContext;
+            this.secureData = secureData;
+            _jtwOpt = jtwOpt.Value;
         }
 
         public async Task<ResponseModel<ApplicationUserResponse>> UserLogin(LoginUserModel model)
@@ -26,8 +38,8 @@ namespace Application.Implementations
             var response = new ResponseModel<ApplicationUserResponse>();
             try
             {
-                var result = await userDAO.IsUserExist(model.Email, model.Password);
-                if (result != null)
+                var result = await userDAO.Login(model.Email, model.Password);
+                if (result)
                 {
                     response.Status = true;
                     response.Message = "Login successfull";
@@ -62,15 +74,12 @@ namespace Application.Implementations
                     UserName = model.Email,
                     Email = model.Email,
                     PhoneNumber = model.PhoneNumber,
-                    PasswordHash = model.Password
+                    PasswordHash = secureData.PasswordHash(model.Password)
                 };
 
                 var result = await userDAO.CreateAccount(user);
-
-                //var result = await userManager.CreateAsync(user, model.Password);
                 if (result)
                 {
-                    //await signInManager.SignInAsync(user, isPersistent: false);
                     response.Status = true;
                     response.Data = UserAuthResponse(model, response, user);
 
@@ -101,8 +110,17 @@ namespace Application.Implementations
                 PhoneNumber = user.PhoneNumber,
                 Token = tokenization.GetAccessToken(model.Email)
             };
-
+            SetJWTCookie(response.Data.Token);
             return response.Data;
+        }
+        private void SetJWTCookie(string token)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.Now.AddHours(double.Parse(_jtwOpt.ExpirationTime)),
+            };
+            httpContext.HttpContext.Response.Cookies.Append("jwtCookie", token, cookieOptions);
         }
     }
 }

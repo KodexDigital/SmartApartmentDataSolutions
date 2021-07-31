@@ -1,12 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Application.Common.Responses;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Services.Auth;
 using SmartApp.DotNetCore.Services.CleintConfig;
 using SmartApp.DotNetCore.Services.Interfaces;
 using SmartApp.DotNetCore.Services.Requests;
 using SmartApp.DotNetCore.Services.Responses;
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Threading;
@@ -20,13 +24,17 @@ namespace SmartApp.DotNetCore.Services.Implementation
         private readonly HttpClient _client;
         private readonly ILogger<SmartAppartmentService> logger;
         private const string MEDIA_TYPE = MediaTypeNames.Application.Json;
+        private readonly IHttpContextAccessor httpContext;
+        private readonly JWTSettings _jtwOpt;
 
         public SmartAppartmentService(ILogger<SmartAppartmentService> logger, IOptions<SmartAppService> serviceOptions,
-            IHttpClientFactory clientFactory)
+            IHttpClientFactory clientFactory, IHttpContextAccessor httpContext, IOptions<JWTSettings> jtwOpt)
         {
             serviceConfig = serviceOptions.Value;
             this.logger = logger;
             _client = clientFactory.CreateClient(serviceConfig.ClientName);
+            this.httpContext = httpContext;
+            _jtwOpt = jtwOpt.Value;
         }
 
         public async Task<LoginUserResponse> LoginUser(LoginUserRequest request)
@@ -117,6 +125,10 @@ namespace SmartApp.DotNetCore.Services.Implementation
             try
             {
                 logger.LogInformation($"{nameof(RegisterUser)} REQUEST INITIATED. THE REQUEST PAYLOAD");
+                
+                var jwt = httpContext.HttpContext.Request.Cookies["jwtCookie"];
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+
                 var result = await _client.GetAsync(serviceConfig.GetAllUsersEndpoint, CancellationToken.None);
                 if (result.IsSuccessStatusCode)
                 {
@@ -126,6 +138,46 @@ namespace SmartApp.DotNetCore.Services.Implementation
                     {
                         response.Status = jsonRespose.Status;
                         response.Data = jsonRespose.Data;
+                        response.Message = jsonRespose.Message;
+                    }
+                    else
+                    {
+                        response.Status = jsonRespose.Status;
+                        response.Message = jsonRespose.Message;
+                    }
+                }
+                else
+                {
+                    response.Status = false;
+                    response.Message = "Client request failed";
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Status = false;
+                response.Message = ex.Message.ToString();
+                logger.LogError($"The Response Payload ==> {response} with Errors ===> {ex.Message}");
+                throw;
+            }
+
+            return response;
+        }
+
+        public async Task<ResponseModel> LoginOutUser()
+        {
+            var response = new ResponseModel();
+            try
+            {
+                logger.LogInformation($"{nameof(LoginOutUser)} REQUEST INITIATED");
+
+                var result = await _client.PostAsync(serviceConfig.LogoutEndpoint, null, CancellationToken.None);
+                if (result.IsSuccessStatusCode)
+                {
+                    var responseResult = await result.Content.ReadAsStringAsync();
+                    var jsonRespose = JsonConvert.DeserializeObject<ResponseModel>(responseResult);
+                    if (jsonRespose.Status.Equals(true))
+                    {
+                        response.Status = jsonRespose.Status;
                         response.Message = jsonRespose.Message;
                     }
                     else

@@ -4,6 +4,7 @@ using Application.Interfaces;
 using Dapper;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Secure.Hash.Algorithm.SDK.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,9 +15,12 @@ namespace Application.Implementations
     public class AccountUserDAO : BaseDAO, IAccountUserDAO
     {
         private readonly ILogger _log;
-        public AccountUserDAO(IDbConnection con, ILoggerFactory logger) : base(con) 
+        private readonly SecureData secureData;
+
+        public AccountUserDAO(IDbConnection con, ILoggerFactory logger, SecureData secureData) : base(con) 
         {
             _log = logger.CreateLogger(typeof(AccountUserDAO));
+            this.secureData = secureData;
         }
         public async Task<bool> CreateAccount(AppUser user)
         {
@@ -71,29 +75,49 @@ namespace Application.Implementations
                 return null;
             }
         }
-
-        public async Task<object> IsUserExist(string username, string password)
+        public async Task<object> IsUserExist(string username)
         {
             try
             {
                 _log.LogInformation($"Validating user through {nameof(IsUserExist)} method at", DateTime.UtcNow);
-                var query = "SELECT * FROM AspNetUsers WHERE UserName = @username AND PasswordHash = @password";
-                var data = await _con.ExecuteScalarAsync(query, new { username, password }, UnitOfWorkSession?.GetTransaction());
+                var query = "SELECT * FROM AspNetUsers WHERE UserName = @username";
+                var data = await _con.ExecuteScalarAsync(query, new { username }, UnitOfWorkSession?.GetTransaction());
                 return data;
             }
             catch (Exception ex)
             {
-                _log.LogError($"Exception occured on {nameof(GetAllUsers)} method with error message {ex}");
+                _log.LogError($"Exception occured on {nameof(IsUserExist)} method with error message {ex}");
                 return false;
             }
         }
-    }
-}
+        public async Task<string> HashedPassword(string username)
+        {
+            try
+            {
+                _log.LogInformation($"Getting the core value user through {nameof(HashedPassword)} method at", DateTime.UtcNow);
+                var query = "SELECT [PasswordHash] FROM AspNetUsers WHERE UserName = @username";
+                var data = await _con.ExecuteScalarAsync(query, new { username });
+                return data.ToString();
+            }
+            catch (Exception ex)
+            {
+                _log.LogError($"Exception occured on {nameof(HashedPassword)} method with error message {ex}");
+                return null;
+            }
+        }
 
-    
-     
-     
-     
+        public async Task<bool> Login(string username, string password)
+        {
+            var user = await IsUserExist(username);
+            if (user != null)
+            {
+                var hashPassword = await HashedPassword(username);
+                return secureData.IsPasswordUnHash(hashPassword, password);
+            }
+            return false;
+        }
+    }
+}     
      
      
      

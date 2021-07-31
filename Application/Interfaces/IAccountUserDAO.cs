@@ -8,7 +8,9 @@ namespace Application.Interfaces
     public interface IAccountUserDAO
     {
         Task<bool> CreateAccount(AppUser user);
-        Task<object> IsUserExist(string username, string password);
+        Task<object> IsUserExist(string username);
+        Task<bool> Login(string username, string password);
+        Task<string> HashedPassword(string username);
         Task<IEnumerable<UserListsResponseModel>> GetAllUsers();
     }
 }
