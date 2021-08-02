@@ -10,7 +10,6 @@ using SmartApp.DotNetCore.Services.Requests;
 using SmartApp.DotNetCore.Services.Responses;
 using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Threading;
@@ -125,10 +124,6 @@ namespace SmartApp.DotNetCore.Services.Implementation
             try
             {
                 logger.LogInformation($"{nameof(RegisterUser)} REQUEST INITIATED. THE REQUEST PAYLOAD");
-                
-                var jwt = httpContext.HttpContext.Request.Cookies["jwtCookie"];
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
-
                 var result = await _client.GetAsync(serviceConfig.GetAllUsersEndpoint, CancellationToken.None);
                 if (result.IsSuccessStatusCode)
                 {

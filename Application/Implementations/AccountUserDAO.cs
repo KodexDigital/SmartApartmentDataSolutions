@@ -1,5 +1,6 @@
 ﻿using Application.Common.Models.Responses;
 using Application.DataAccessObjects;
+using Application.Helper;
 using Application.Interfaces;
 using Dapper;
 using Domain.Entities;
@@ -15,12 +16,13 @@ namespace Application.Implementations
     public class AccountUserDAO : BaseDAO, IAccountUserDAO
     {
         private readonly ILogger _log;
-        private readonly SecureData secureData;
+        private readonly PasswordHasherHelper hasher;
 
-        public AccountUserDAO(IDbConnection con, ILoggerFactory logger, SecureData secureData) : base(con) 
+        public AccountUserDAO(IDbConnection con, ILoggerFactory logger, PasswordHasherHelper hasher, 
+            SecureData secureData) : base(con) 
         {
             _log = logger.CreateLogger(typeof(AccountUserDAO));
-            this.secureData = secureData;
+            this.hasher = hasher;
         }
         public async Task<bool> CreateAccount(AppUser user)
         {
@@ -62,7 +64,7 @@ namespace Application.Implementations
             }
         }
 
-        public async Task<IEnumerable<UserListsResponseModel>> GetAllUsers() // get based user login
+        public async Task<IEnumerable<UserListsResponseModel>> GetAllUsers()
         {
             try
             {
@@ -106,21 +108,16 @@ namespace Application.Implementations
             }
         }
 
-        public async Task<bool> Login(string username, string password)
+        public async Task<Microsoft.AspNet.Identity.PasswordVerificationResult> Login(string username, string password)
         {
             var user = await IsUserExist(username);
             if (user != null)
             {
                 var hashPassword = await HashedPassword(username);
-                return secureData.IsPasswordUnHash(hashPassword, password);
+                return hasher.VerifyPasswordHashed(hashPassword, password);
             }
-            return false;
+            else
+                return Microsoft.AspNet.Identity.PasswordVerificationResult.Failed;
         }
     }
-}     
-     
-     
-     
-     
-     
-    
+}

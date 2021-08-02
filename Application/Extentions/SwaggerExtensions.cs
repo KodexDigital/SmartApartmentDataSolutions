@@ -15,7 +15,7 @@ namespace Application.Extensions
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = $"Title: {Information.APP_NAME}",
+                    Title = Information.APP_NAME,
                     Version = $"Version: {Information.VERSION}",
                     Description = $"Description: {Information.DESCRIPTION}",
                     Contact = new OpenApiContact

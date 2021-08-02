@@ -36,13 +36,15 @@ namespace SmartApp.WebForm
 
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 Context.GetOwinContext().Authentication.SignIn(new Microsoft.Owin.Security.AuthenticationProperties()
-                { IsPersistent = false}, identity);
+                { IsPersistent = false }, identity);
 
-                Response.Redirect("AllUsers");
+                Response.Redirect("AllUsers", false);
+                Context.ApplicationInstance.CompleteRequest();
             }
             else
             {
                 lblStatusText.Text = "Invalid username or password.";
+                lblStatusText.Visible = true;
             }
         }
 
@@ -50,6 +52,8 @@ namespace SmartApp.WebForm
         {
             Context.GetOwinContext().Authentication.SignOut();
             Response.Redirect("Default");
+            Response.Cookies.Clear();
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }

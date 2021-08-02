@@ -32,7 +32,7 @@ namespace Application.Implementations
             };
 
             var token = new JwtSecurityToken(jWTOption.Issuer, jWTOption.Issuer,claims,
-              expires: DateTime.Now.AddHours(double.Parse(jWTOption.ExpirationTime)),
+              expires: DateTime.Now.AddMinutes(30),
               signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

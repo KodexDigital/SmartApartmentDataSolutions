@@ -23,6 +23,7 @@ namespace Presentation
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            //services.AddMvc(opt => opt.Filters.Add(new RequireHttpsAttribute()));
             #region Custom dependency injections 
             services.AddSwagger();
             services.AddInjections();

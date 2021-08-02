@@ -9,6 +9,8 @@ using Secure.Hash.Algorithm.SDK.Controllers;
 using Microsoft.AspNetCore.Http;
 using Services.Auth;
 using Microsoft.Extensions.Options;
+using Application.Helper;
+using Microsoft.AspNet.Identity;
 
 namespace Application.Implementations
 {
@@ -19,17 +21,21 @@ namespace Application.Implementations
         private readonly ITokenization tokenization;
         private readonly IHttpContextAccessor httpContext;
         private readonly SecureData secureData;
+        private readonly IOptions<JWTSettings> jtwOpt;
+        private readonly PasswordHasherHelper _password;
         private readonly JWTSettings _jtwOpt;
 
         public ApplicationUser(ILogger<ApplicationUser> logger, IAccountUserDAO userDAO,
             ITokenization tokenization, IHttpContextAccessor httpContext, SecureData secureData,
-            IOptions<JWTSettings> jtwOpt)
+            IOptions<JWTSettings> jtwOpt, PasswordHasherHelper passwordHasher)
         {
             this.logger = logger;
             this.userDAO = userDAO;
             this.tokenization = tokenization;
             this.httpContext = httpContext;
             this.secureData = secureData;
+            this.jtwOpt = jtwOpt;
+            _password = passwordHasher;
             _jtwOpt = jtwOpt.Value;
         }
 
@@ -39,7 +45,7 @@ namespace Application.Implementations
             try
             {
                 var result = await userDAO.Login(model.Email, model.Password);
-                if (result)
+                if (result.Equals(PasswordVerificationResult.Success))
                 {
                     response.Status = true;
                     response.Message = "Login successfull";
@@ -74,7 +80,7 @@ namespace Application.Implementations
                     UserName = model.Email,
                     Email = model.Email,
                     PhoneNumber = model.PhoneNumber,
-                    PasswordHash = secureData.PasswordHash(model.Password)
+                    PasswordHash = _password.HashPassword(model.Password)
                 };
 
                 var result = await userDAO.CreateAccount(user);
@@ -118,9 +124,10 @@ namespace Application.Implementations
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Expires = DateTime.Now.AddHours(double.Parse(_jtwOpt.ExpirationTime)),
+                Expires = DateTime.Now.AddHours(6),
             };
-            httpContext.HttpContext.Response.Cookies.Append("jwtCookie", token, cookieOptions);
+
+            httpContext.HttpContext.Response.Cookies.Append("X-Access-Token", token, cookieOptions);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Application.Implementations;
+﻿using Application.Helper;
+using Application.Implementations;
 using Application.Interfaces;
 using DataAccessLayer.DatabaseContext;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -13,6 +14,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Extensions
 {
@@ -24,6 +26,7 @@ namespace Application.Extensions
             services.AddTransient<ITokenization, Tokenization>();
             services.AddTransient<IAccountUserDAO, AccountUserDAO>();
             services.AddSingleton(typeof(SecureData));
+            services.AddSingleton(typeof(PasswordHasherHelper));
             services.AddHttpContextAccessor();
             return services;
         }
@@ -41,28 +44,45 @@ namespace Application.Extensions
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(opt =>
+            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opt => 
+            {
+                opt.Cookie.HttpOnly = true;
+                opt.SlidingExpiration = true;
+                opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                opt.LoginPath = "/Account/SignIn";
+                opt.LogoutPath = "/Account/LogOut";
+                opt.AccessDeniedPath = opt.LogoutPath;
+                opt.ReturnUrlParameter = "returnUrl";
+            })
+            .AddJwtBearer(opt =>
             {
                 opt.Authority = Configuration["Auth0:Domain"];
                 opt.Audience = Configuration["Auth0:Audience"];
+                opt.SaveToken = true;
+                opt.RequireHttpsMetadata = true;
                 opt.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
+                    RequireExpirationTime = true,
                     ValidIssuer = Configuration["JWTSettings:Issuer"],
                     ValidAudience = Configuration["JWTSettings:Issuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWTSettings:SecretKey"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWTSettings:SecretKey"])),
+                    ClockSkew = TimeSpan.Zero,
+                    AuthenticationType = JwtBearerDefaults.AuthenticationScheme
+                };
+                opt.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.Token = context.Request.Cookies["X-Access-Token"];
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-            {
-                options.SlidingExpiration = true;
-                options.ExpireTimeSpan = new TimeSpan(0, 1, 0);
-            });
             return services;
         }
     }

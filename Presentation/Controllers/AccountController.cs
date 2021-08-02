@@ -53,8 +53,11 @@ namespace Presentation.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public IActionResult LogOut()
         {
-            foreach (var cookie in httpContext.HttpContext.Request.Cookies)
-                Response.Cookies.Delete(cookie.Key);
+            var cookie = string.Empty;
+            foreach (var ckie in httpContext.HttpContext.Request.Cookies)
+                cookie = ckie.Key;
+
+            httpContext.HttpContext.Response.Cookies.Delete(cookie);
             return Ok(new ResponseModel { Status = true, Message = "User loggeed out successfully." });
         }
     }

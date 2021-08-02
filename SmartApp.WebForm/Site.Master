@@ -15,7 +15,7 @@
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
 </head>
-<body style="font-family: Arial, Helvetica, sans-serif; font-size: small; background-image: url('Images/Acc_img.PNG')">
+<body onload="GetCookies()" style="font-family: Arial, Helvetica, sans-serif; font-size: small; background-image: url('Images/Acc_img.PNG')">
     <form runat="server">
         <asp:ScriptManager runat="server">
             <Scripts>
@@ -50,8 +50,8 @@
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li><a runat="server" href="~/">Home</a></li>
-                        <li><a runat="server" href="~/UserRegistration">Sign Up</a></li>
-                        <li><a runat="server" href="~/Login">Sign In</a></li>
+                        <li id="signup"><a runat="server" href="~/UserRegistration">Sign Up</a></li>
+                        <li id="signin"><a runat="server" href="~/Login">Sign In</a></li>
                         <li><a runat="server" href="~/AllUsers">View All Users</a></li>
                     </ul>
                 </div>
@@ -68,5 +68,20 @@
             </footer>
            </div>
     </form>
+
+    <script>
+        function getCookies() {
+            var brows = bre
+            var cookies = document.cookie.get
+            if (cookies.length > 0) {
+                document.getElementById('signup').style.display = "none";
+                document.getElementById('signin').style.display = "none";
+            }
+            else {
+                document.getElementById('signup').style.display = "block";
+                document.getElementById('signin').style.display = "block";
+            }
+        }
+    </script>
 </body>
 </html>

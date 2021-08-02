@@ -24,6 +24,7 @@ namespace SmartApp.WebForm
         {
             Context.GetOwinContext().Authentication.SignOut();
             Response.Redirect("/", false);
+            Response.Cookies.Clear();
             Context.ApplicationInstance.CompleteRequest();
         }
     }
